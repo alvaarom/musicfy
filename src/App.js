@@ -1,24 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { ToastContainer } from "react-toastify";
+import "./utils/Firebase";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import Auth from "./pages/Auth";
+import LoggedLayout from "./layouts/LoggedLayout";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const auth = getAuth();
+  onAuthStateChanged(auth, (currentUser) => {
+    // console.log(currentUser);
+    if (!currentUser?.emailVerified) {
+      signOut(auth);
+      setUser(null);
+    } else {
+      setUser(currentUser);
+    }
+    setLoading(false);
+  });
+
+  if (loading) {
+    return null;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      {!user ? <Auth /> : <LoggedLayout user={user} />}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnVisibilityChange
+        draggable
+        pauseOnHover={true}
+      />
+    </>
   );
 }
 
